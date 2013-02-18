@@ -187,6 +187,20 @@
     (let [mexpr (monad-expr steps expr)]
       `(with-monad ~name ~mexpr))))
 
+(defmacro domonad-> [& forms]
+  (let [[expr & more] forms
+        g (gensym)
+        pstep (fn [step] `(-> ~g ~step))
+        steps (interleave (repeat g) `[~expr ~@(map pstep more)])]
+    (monad-expr steps g)))
+
+(defmacro domonad->> [& forms]
+  (let [[expr & more] forms
+        g (gensym)
+        pstep (fn [step] `(->> ~g ~step))
+        steps (interleave (repeat g) `[~expr ~@(map pstep more)])]
+    (monad-expr steps g)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Defining functions used with monads

@@ -11,9 +11,24 @@
 (ns clojure.algo.test-monads
   (:use [clojure.test :only (deftest is are run-tests)]
         [clojure.algo.monads
-         :only (with-monad domonad m-lift m-seq m-chain writer-m write
+         :only (with-monad domonad domonad-> domonad->>
+                 m-lift m-seq m-chain writer-m write
                 sequence-m maybe-m state-m maybe-t sequence-t)]))
 
+(deftest domonad-threading
+  (are [a b] (= a b)
+       (with-monad maybe-m
+         (domonad-> 2 (+ 3) (* 2)))
+       10
+       (with-monad maybe-m
+         (domonad-> false (if 2) (* 2)))
+       nil
+       (with-monad maybe-m
+         (domonad->> [1 2] (map inc) (reduce +)))
+       5
+       (with-monad maybe-m
+         (domonad->> [2 3] (if false) (reduce +)))
+       nil))
 
 (deftest domonad-if-then
   (let [monad-value (domonad maybe-m
